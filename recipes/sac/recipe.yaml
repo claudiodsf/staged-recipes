@@ -1,0 +1,90 @@
+context:
+  version: "103.0"
+
+package:
+  name: sac
+  version: ${{ version }}
+
+source:
+  url: https://github.com/EarthScope/sac-community/archive/refs/tags/v${{ version }}.tar.gz
+  sha256: f61fbe30d0411fe3033bdb76731062da24940c27920338d0f91a867842b791b8
+
+build:
+  number: 0
+  # Upstream's Windows build (win/sac.vcxproj) is a VS2013 MSVC project with a
+  # Win32 configuration only, and it expects prebuilt 32-bit libxml2/iconv/zlib
+  # binaries from a third party; it is not part of upstream CI or releases.
+  # Porting it to win-64 needs a Windows machine to develop against.
+  skip:
+    - win
+  script: build.sh
+
+requirements:
+  build:
+    - ${{ compiler('c') }}
+    - ${{ stdlib('c') }}
+    - make
+    - pkg-config
+  host:
+    - libcurl
+    - libxml2-devel
+    - xorg-libx11
+    - xorg-libxpm
+    - xorg-xorgproto
+    - zlib
+
+tests:
+  - script:
+      - printf 'fg impulse npts 100 delta 0.01\nw test.sac\nquit\n' > commands.m
+      - sac commands.m
+      - test "$(saclst delta npts f test.sac | awk '{$1=$1};1')" = "test.sac 0.01 100"
+  - package_contents:
+      files:
+        - bin/sac
+        - bin/sac-config
+        - bin/sacinit.sh
+        - bin/saclst
+        - bin/sacswap
+        - bin/sgftops
+        - include/sac.h
+        - include/sacio.h
+        - lib/libsac.a
+        - lib/libsacio.a
+        - aux/messages
+        - macros/init.m
+
+about:
+  homepage: https://github.com/EarthScope/sac-community
+  summary: Seismic Analysis Code, community edition
+  description: |
+    SAC (Seismic Analysis Code) is a general purpose interactive program
+    designed for the study of sequential signals, especially time series
+    data. It is used in seismology for reading and writing binary seismic
+    data files, for filtering, spectral analysis and deconvolution, and for
+    interactive display of waveforms on X11 displays.
+
+    This is the community maintained continuation of SAC. In addition to the
+    `sac` interpreter the package contains the `saclst`, `sacswap`,
+    `sgftops`, `bbfswap` and `sgfswap` utilities, the `sacio`, `sac` and
+    `evalresp` static libraries with their headers, and the auxiliary data
+    files (colour tables, travel-time tables, macros, ...) in the `aux` and
+    `macros` directories of the installation prefix.
+
+    SAC finds its auxiliary data through the `SACAUX` environment variable,
+    which is compiled into the binaries and points at the `aux` directory of
+    the installation prefix. The `bin/sacinit.sh` and `bin/sacinit.csh`
+    scripts set `SACHOME`, `SACAUX` and `PATH` for an interactive session.
+  license: Apache-2.0 AND BSD-2-Clause AND BSD-3-Clause AND LGPL-3.0-or-later
+  license_file:
+    - License
+    - evalresp/LICENSE
+    - fern/License
+    - libmseed/LICENSE
+    - linenoise.license
+    - sacio/License
+  repository: https://github.com/EarthScope/sac-community
+  documentation: https://ds.iris.edu/files/sac-manual/index.html
+
+extra:
+  recipe-maintainers:
+    - claudiodsf
