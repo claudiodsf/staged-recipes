@@ -8,49 +8,74 @@ package:
 source:
   url: https://github.com/EarthScope/sac-community/archive/refs/tags/v${{ version }}.tar.gz
   sha256: f61fbe30d0411fe3033bdb76731062da24940c27920338d0f91a867842b791b8
+  # Only win/sac.vcxproj is touched, and only the Windows build reads it, so the
+  # patch is harmless on Unix.  It retargets upstream's Visual Studio project
+  # (written for VS2013, Win32 only, expecting prebuilt third-party libraries
+  # under win/lib) to x64 and to the conda-forge libxml2/zlib libraries.
+  patches:
+    - patches/win-x64.patch
 
 build:
   number: 0
-  # Upstream's Windows build (win/sac.vcxproj) is a VS2013 MSVC project with a
-  # Win32 configuration only, and it expects prebuilt 32-bit libxml2/iconv/zlib
-  # binaries from a third party; it is not part of upstream CI or releases.
-  # Porting it to win-64 needs a Windows machine to develop against.
-  skip:
-    - win
-  script: build.sh
+  # build.sh is used on Unix and build.bat on Windows; both are picked up
+  # automatically from the recipe directory.
 
 requirements:
   build:
     - ${{ compiler('c') }}
     - ${{ stdlib('c') }}
-    - make
-    - pkg-config
+    - if: unix
+      then:
+        - make
+        - pkg-config
+    - if: win
+      # src/win/win.cpp, the native Win32 user interface, is C++
+      then:
+        - ${{ compiler('cxx') }}
   host:
-    - libcurl
-    - libxml2-devel
-    - xorg-libx11
-    - xorg-libxpm
-    - xorg-xorgproto
     - zlib
+    - if: unix
+      then:
+        - libcurl
+        - libxml2-devel
+        - xorg-libx11
+        - xorg-libxpm
+        - xorg-xorgproto
+    - if: win
+      then:
+        - libxml2-devel
 
 tests:
   - script:
-      - printf 'fg impulse npts 100 delta 0.01\nw test.sac\nquit\n' > commands.m
-      - sac commands.m
-      - test "$(saclst delta npts f test.sac | awk '{$1=$1};1')" = "test.sac 0.01 100"
+      - if: unix
+        then:
+          - printf 'fg impulse npts 100 delta 0.01\nw test.sac\nquit\n' > commands.m
+          - sac commands.m
+          - test "$(saclst delta npts f test.sac | awk '{$1=$1};1')" = "test.sac 0.01 100"
+          - test -f "${PREFIX}/aux/messages"
+          - test -f "${PREFIX}/bin/sac-config"
+          - test -f "${PREFIX}/bin/sacinit.sh"
+          - test -f "${PREFIX}/lib/libsac.a"
+          - test -f "${PREFIX}/lib/libsacio.a"
+      - if: win
+        then:
+          # The Windows package is what upstream's Visual Studio build produces:
+          # the sac interpreter plus its auxiliary data.  The utilities and the
+          # static libraries are Unix only (they use POSIX APIs).
+          - echo fg impulse npts 100 delta 0.01> commands.m
+          - echo w test.sac>> commands.m
+          - echo quit>> commands.m
+          - sac commands.m
+          - if errorlevel 1 exit 1
+          - if not exist test.sac exit 1
+          - if not exist "%LIBRARY_PREFIX%\bin\winaux\messages" exit 1
   - package_contents:
+      bin:
+        - sac
+      include:
+        - sac.h
+        - sacio.h
       files:
-        - bin/sac
-        - bin/sac-config
-        - bin/sacinit.sh
-        - bin/saclst
-        - bin/sacswap
-        - bin/sgftops
-        - include/sac.h
-        - include/sacio.h
-        - lib/libsac.a
-        - lib/libsacio.a
-        - aux/messages
         - macros/init.m
 
 about:
@@ -61,12 +86,14 @@ about:
     designed for the study of sequential signals, especially time series
     data. It is used in seismology for reading and writing binary seismic
     data files, for filtering, spectral analysis and deconvolution, and for
-    interactive display of waveforms on X11 displays.
+    interactive display of waveforms.
 
-    This is the community maintained continuation of SAC. In addition to the
-    `sac` interpreter the package contains the `saclst`, `sacswap`,
-    `sgftops`, `bbfswap` and `sgfswap` utilities, the `sacio`, `sac` and
-    `evalresp` static libraries with their headers, and the auxiliary data
+    This is the community maintained continuation of SAC.
+
+    {% if unix %}
+    In addition to the `sac` interpreter the package contains the `saclst`,
+    `sacswap`, `sgftops`, `bbfswap` and `sgfswap` utilities, the `sacio`, `sac`
+    and `evalresp` static libraries with their headers, and the auxiliary data
     files (colour tables, travel-time tables, macros, ...) in the `aux` and
     `macros` directories of the installation prefix.
 
@@ -74,6 +101,17 @@ about:
     which is compiled into the binaries and points at the `aux` directory of
     the installation prefix. The `bin/sacinit.sh` and `bin/sacinit.csh`
     scripts set `SACHOME`, `SACAUX` and `PATH` for an interactive session.
+    {% else %}
+    On Windows the package contains the `sac` interpreter built with the Visual
+    Studio project that upstream maintains. The `saclst`, `sacswap`, `sgftops`,
+    `bbfswap` and `sgfswap` utilities and the `sacio`, `sac` and `evalresp`
+    libraries are not part of it, because upstream's Windows build does not
+    cover them.
+
+    SAC looks for its auxiliary data (colour tables, travel-time tables,
+    macros, ...) in the `winaux` directory next to `sac.exe`, and the
+    `macros` directory of the installation prefix holds the example macros.
+    {% endif %}
   license: Apache-2.0 AND BSD-2-Clause AND BSD-3-Clause AND LGPL-3.0-or-later
   license_file:
     - License

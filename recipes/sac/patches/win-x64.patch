@@ -1,0 +1,97 @@
+diff --git a/win/sac.vcxproj b/win/sac.vcxproj
+index 183ce25..7cf1291 100644
+--- a/win/sac.vcxproj
++++ b/win/sac.vcxproj
+@@ -1,13 +1,13 @@
+ ﻿<?xml version="1.0" encoding="utf-8"?>
+ <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ItemGroup Label="ProjectConfigurations">
+-    <ProjectConfiguration Include="Debug|Win32">
++    <ProjectConfiguration Include="Debug|x64">
+       <Configuration>Debug</Configuration>
+-      <Platform>Win32</Platform>
++      <Platform>x64</Platform>
+     </ProjectConfiguration>
+-    <ProjectConfiguration Include="Release|Win32">
++    <ProjectConfiguration Include="Release|x64">
+       <Configuration>Release</Configuration>
+-      <Platform>Win32</Platform>
++      <Platform>x64</Platform>
+     </ProjectConfiguration>
+   </ItemGroup>
+   <PropertyGroup Label="Globals">
+@@ -15,13 +15,13 @@
+     <RootNamespace>sac</RootNamespace>
+   </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+     <ConfigurationType>Application</ConfigurationType>
+     <UseDebugLibraries>true</UseDebugLibraries>
+     <PlatformToolset>v120</PlatformToolset>
+     <CharacterSet>MultiByte</CharacterSet>
+   </PropertyGroup>
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+     <ConfigurationType>Application</ConfigurationType>
+     <UseDebugLibraries>false</UseDebugLibraries>
+     <PlatformToolset>v120</PlatformToolset>
+@@ -31,21 +31,21 @@
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+   <ImportGroup Label="ExtensionSettings">
+   </ImportGroup>
+-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+   <PropertyGroup Label="UserMacros" />
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+     <IncludePath>..\inc;..\src;$(IncludePath)</IncludePath>
+     <IntDir>$(Configuration)\build\</IntDir>
+   </PropertyGroup>
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+     <IncludePath>..\inc;..\src;$(IncludePath)</IncludePath>
+   </PropertyGroup>
+-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+     <ClCompile>
+       <WarningLevel>Level3</WarningLevel>
+       <Optimization>Disabled</Optimization>
+@@ -53,14 +53,14 @@
+       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_USE_MATH_DEFINES;WIN32;YY_NO_UNISTD_H;LOG_LABEL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>lib\</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>$(LIBRARY_INC)</AdditionalIncludeDirectories>
+     </ClCompile>
+     <Link>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+-      <AdditionalDependencies>win\lib\lib\libxml2_a.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>$(LIBRARY_LIB)\libxml2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+     </Link>
+   </ItemDefinitionGroup>
+-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+     <ClCompile>
+       <WarningLevel>Level3</WarningLevel>
+       <Optimization>MaxSpeed</Optimization>
+@@ -70,11 +70,11 @@
+       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_USE_MATH_DEFINES;WIN32;YY_NO_UNISTD_H;LOG_LABEL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>lib\include</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>$(LIBRARY_INC)</AdditionalIncludeDirectories>
+     </ClCompile>
+     <Link>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+-      <AdditionalDependencies>lib\lib\libxml2_a.lib;lib\lib\iconv_a.lib;lib\lib\zlib.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>$(LIBRARY_LIB)\libxml2.lib;$(LIBRARY_LIB)\zlib.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+       <OptimizeReferences>true</OptimizeReferences>
+       <IgnoreSpecificDefaultLibraries>
